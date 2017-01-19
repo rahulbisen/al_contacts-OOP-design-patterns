@@ -1,0 +1,105 @@
+(lp0
+(dp1
+S'phone'
+p2
+S' 0123456789'
+p3
+sS'name'
+p4
+S'Rahul Singh'
+p5
+sS'address'
+p6
+S' 28 Deanswood N112TQ'
+p7
+sa(dp8
+g2
+S' 01111222233'
+p9
+sg4
+S'James'
+p10
+sg6
+S' Maidstone Road N221QQ'
+p11
+sa(dp12
+g2
+S' 99999999999'
+p13
+sg4
+S'Albert'
+p14
+sg6
+S' Queens Road CA-20001'
+p15
+sa(dp16
+g2
+S' 888888889999'
+p17
+sg4
+S'Yo Han'
+p18
+sg6
+S' Japan'
+p19
+sa(dp20
+g2
+S' 777777777777'
+p21
+sg4
+S'Alasdair Bird'
+p22
+sg6
+S' Great Portland Street W1W5DB'
+p23
+sa(dp24
+g2
+S' 76866887877'
+p25
+sg4
+S'Mike Brainerd'
+p26
+sg6
+S' Address Undisclosed'
+p27
+sa(dp28
+g2
+S' 535353535355'
+p29
+sg4
+S'Tom'
+p30
+sg6
+S' London Bridge W1W3AD'
+p31
+sa(dp32
+g2
+S' 5555555555555'
+p33
+sg4
+S'William 1'
+p34
+sg6
+S' WoodGreen N221AA'
+p35
+sa(dp36
+g2
+S' 545545454544'
+p37
+sg4
+S'William 1'
+p38
+sg6
+S' Turnpike Lane N227QA'
+p39
+sa(dp40
+g2
+S' 121212121212'
+p41
+sg4
+S'Patricia Kung'
+p42
+sg6
+S' Somewhere in Sydney'
+p43
+sa.

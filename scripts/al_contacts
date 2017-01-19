@@ -1,0 +1,141 @@
+#! /usr/bin/env python
+
+import os
+import sys
+import time
+import argparse
+import traceback
+import csv
+
+from al_contacts.common import dataFormats, dataViews
+from al_contacts.common import ACTIONS_MAP, FORMATS_MAP, VIEWS_MAP
+from al_contacts.constants import RESOURCES_DIR, CSV_INPUT_FILE
+from al_contacts.formats import FormatsException
+from al_contacts.format import FormatException
+from al_contacts.views import ViewsException
+from al_contacts.view import ViewException
+from al_contacts.reader_writer import ReaderWriterException
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='"Contacts info" command line app. Serialise/deserialise data\
+        in available formats and view the data in available views')
+
+    parser.add_argument(
+        'format',
+        help='Format to be processed. Valid formats are {0}'.format(FORMATS_MAP.keys()),
+    )
+    parser.add_argument(
+        'action',
+        help='Action to be performed, Valid actions are {0}'.format(ACTIONS_MAP.keys()),
+    )
+    parser.add_argument(
+        '-v',
+        '--views',
+        metavar='view',
+        nargs='*',
+        help='Views to be displayed. Valid views are {0}'.format(VIEWS_MAP.keys()),
+        default=[],
+    )
+    parser.add_argument(
+        '--input-csv-file',
+        help='Provide an alternate csv file for contacts info. Defaults to "{0}"'.format(CSV_INPUT_FILE),
+        default=CSV_INPUT_FILE,
+    )
+    parser.add_argument(
+        '--filepath',
+        help='Provide a filepath to read/write(based on selected action) the serialised data.\
+            Defaults to "{0}/<action>.<format>"'.format(RESOURCES_DIR),
+    )
+
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+
+    ######################################################################
+    #                             ARGS CHECK                             #
+    ######################################################################
+    if args.format not in FORMATS_MAP.keys():
+        print('Invalid format specified: "{0}"'.format(args.format))
+        print('Valid formats are: {0}'.format(FORMATS_MAP.keys()))
+        sys.exit(0)
+
+    if args.action not in ACTIONS_MAP.keys():
+        print('Invalid action specified: "{0}"'.format(args.action))
+        print('Valid actions are: {0}'.format(ACTIONS_MAP.keys()))
+        sys.exit(0)
+
+    views = list(set(args.views))
+    for aView in views:
+        if aView not in VIEWS_MAP.keys():
+            print('Invalid view specified: "{0}"'.format(aView))
+            print('Valid views are: {0}'.format(VIEWS_MAP.keys()))
+            sys.exit(0)
+
+    if not os.path.exists(args.input_csv_file):
+        print('Contacts data csv file does not exist: {0}'.format(args.input_csv_file))
+        print('Please specify the correct path via "--input-csv-file" flag')
+        sys.exit(0)
+
+    if args.filepath:
+        filepath = os.path.abspath(args.filepath)
+    else:
+        filepath = os.path.join(RESOURCES_DIR, '{0}.{1}'.format(args.action, args.format))
+
+    ######################################################################
+    #                         ACTUAL PROCESSING                          #
+    ######################################################################
+    print('Loading contacts data from the file: {0}'.format(args.input_csv_file))
+    data = load_csv_file(args.input_csv_file)
+
+    try:
+        # Get the Format Object for the specified format
+        formatObj = FORMATS_MAP[args.format]
+
+        # Set data and filepath in the format reader/writer
+        formatObj.rw.data = data
+        formatObj.rw.filepath = filepath
+        # notify reader/writer for the format about the task to be done.
+        formatObj.notify_rw(action=args.action)
+
+        # formatObj.rw.data always contains the deserialised data of the
+        # expected list of dictionaries format
+        if views:
+            dataViews.data = formatObj.rw.data
+            for aView in views:
+                dataViews.notify_views(view=aView)
+        else:
+            print('To display the data, please pass one or more views with the "--views" flag!')
+            print('Valid views are: {0}'.format(VIEWS_MAP.keys()))
+
+    except (FormatsException, FormatException, ViewsException, ViewException, ReaderWriterException) as e:
+        print('Error from package "al_contacts"! {0}'.format(e))
+        print('\n')
+        print(traceback.format_exc())
+
+    except Exception as e:
+        print('Error! {0}'.format(e))
+        print('\n')
+        print(traceback.format_exc())        
+
+
+def load_csv_file(csvFile=None):
+    """
+    read contents and return data as a list of dictionaries
+    """
+    data = []
+    with open(csvFile, 'r') as fp:
+        reader = csv.reader(fp, delimiter=',')
+        for row in reader:
+            userData = {}
+            userData['name'] = row[0]
+            userData['address'] = row[1]
+            userData['phone'] = row[2]
+            data.append(userData)
+
+    return data
+
+
+if __name__ == '__main__':
+    main()

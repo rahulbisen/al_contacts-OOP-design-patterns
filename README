@@ -1,0 +1,120 @@
+PROBLEM STATEMENT:
+-------------------------------------
+Write a command line tool in python which shows how you would take some sets of personal data  (name, address, phone number) and serialise them/deserialise them in at least 2 formats, and display it in at least 2 different ways (no need to use a GUI Framework - text output/HTML or any other human readable format is  fine).  There is no need to support manual data entry - you could manually write a file in one of your chosen formats to give you your input test data.
+
+Write it in such a way that it would be easy for a developer:
+to add support for additional storage formats
+to query a list of currently supported formats
+to supply an alternative reader/writer for one of the supported formats
+
+Show Design Patterns Knowledge for communication of various objects and classes.
+Provide reasonable Unit Test coverage.
+
+
+DESIGN DECISIONS:
+-------------------------------------
+1) The design pattern can be classified broadly into Model-View-Controller pattern.
+The 'Model' here is the entire data and the business/processing logic including the entire hierarchy of 'Formats' and 'Format' classes and subclasses and the 'common' module that performs the registration process.
+The 'View' here is implemented through the 'Views' and the 'View' classes and its subclasses.
+The 'Controller' here is the main app 'al_contacts_app' that takes care of the user input and lets the model and view communicate.
+
+2) The 'Model' and the 'View' are further implemented using 'Observer Pattern'. One class acts as an 'Observable' class to the other 'Observer' classes, where the instances of the observer classes register with the instance of the observable class.
+The class/instance relationship of this project is as below:
+'Formats' <-- 'Format' <-- 'ReaderWriter'
+'Views' <-- 'View'
+
+'<--' can be read as 'registers' and 'notifies' and 'is observable for observer'
+
+
+DESIGN ASSUMPTIONS:
+-------------------------------------
+These assumptions were made based on the problem/task statement:
+1) Multiple formats(instances of observer 'Format' class or its subclasses) can register to the observable 'Formats' class.
+2) At any time, only a single observer ReaderWriter(or its subclasses that implement 'serialise' and 'deserialise' actions) remains registered to a particular instance of the observable 'Format' class or its subclasses.
+3) Multiple views(instances of observer 'View' class) can register to the instance of observable 'Views' class.
+4) As of now the data is passed between classes and objects as simple python dictonary as the primary goal of the project is to demonstrate Design patterns.
+
+
+DESIGN FEATURES:
+-------------------------------------
+As asked in the problem statement, it is Easy for a developer:
+1) to add support for additional storage formats:
+Subclass 'Format' and register it with 'Formats'. Subclass 'ReaderWriter' and register it with the instance of 'Format'.
+
+formats = Formats()  # instance of the observable class 'Formats'
+newFormat = Format(formats)  # create an instance for a new format and register with 'formats'
+newFormatReaderWriter = ReaderWriter(newFormat)  # create an instance for a new reader/writer and register with 'newFormat'
+
+2) to query a list of currently supported formats:
+The instance of the observable 'Formats' class stores all registered formats. Just query Format.formats from its instance.
+
+formats.formats  # gives a list of all registered formats.
+
+3) to supply an alternative reader/writer for one of the supported formats
+Each format stores the registered reader/writer with it. Find it and reassign a new reader/writer.
+At any time, only the last assigned reader/writer remains available.
+
+newFormatReaderWriter = ReaderWriter() 
+# Find the fomat from registered formats.
+myFormat.register_rw(newFormatReaderWriter)
+
+3) For the command-line app, the user has choices in terms of available formats(json, pickle), available actions(serialise/deserialise), available views(list, table) and overriding input/output file which gets presented in 'help' to choose from.
+
+4) The API makes it very easy to write a new CLUI to run serilise/deserialise operations on all registered formats and display the data on all registered views. 
+
+ 
+
+DESIGN IMPROVEMENTS:
+-------------------------------------
+1) With a very small change, the 'Format' and 'ReaderWriter' classes can be defined as Abstract Base Classes. These classes are not instantiated anywhere other than in unittest implementation.
+4) As of now the data is passed between classes and objects as simple python dictonary. With small change, the contact info components could be instance viriables of the class that
+holds them and class instance could be passed instead.
+
+
+IMPLEMENTATION ASSUMPTIONS:
+-------------------------------------
+Following assumptions have been made during the development:
+1) Developing a complex data serialiser/deserialiser for data formats is not the goal of the project. Hence, choosing two simple data formats 'json' and 'pickle'.
+2) Developing complex display systems(views) for the data is not goal of the project. Printing data two simple 'table' and 'list' views.
+3) Sorting any data anywhere, either for processing or for display on views is not required.
+4) Data provided is as per specification and data validation at each stage of processing is not a part of the project. 
+5) Implementation of strict datatype checks for arguments in the functions is not required at this point. User/Developer will take care of data passed in functions.
+6) Integration tests are not required at this point. Having said that, file read/write operations should not be done in ideal unit testing and should be part of integration testing. If at all they have to, these will have to be mocked. Still went ahead and added some file read/write unittests for the ReaderWriter class.
+7) The view flag/classes process and display the deserialised data and not the serialised string data
+
+
+HOW TO INSTALL:
+-------------------------------------
+The package is built with python distutils.
+
+1) un-tar the downloaded tarball
+> tar -xvf <tarball>
+OR
+Clone from the GitHub Repo
+
+2) cd into the package root
+> cd <package root dir>
+
+3) Run setup.py
+> python setup.py install
+
+
+HOW TO RUN THE CLUI:
+-------------------------------------
+'al_contacts' is the CLUI app/script
+
+run:
+> al_contacts
+
+
+HOW TO RUN TESTS
+-------------------------------------
+The tests are in ./tests directory.
+From the package root, run:
+> nosetests -w tests -v
+
+OR
+
+Individual test files could be executed just like any other python executable:
+> python tests/test_view.py -vv
+
